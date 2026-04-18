@@ -1,50 +1,70 @@
-html,
-body {
-  padding: 0;
+html, body {
   margin: 0;
+  padding: 0;
   font-family: Arial, Helvetica, sans-serif;
-  background: #0e0e10;
+  background: #0b0b10;
   color: white;
 }
 
-* {
-  box-sizing: border-box;
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
 }
 
-.container {
-  max-width: 600px;
-  margin: 80px auto;
-  padding: 20px;
-  text-align: center;
+.header {
+  text-align: left;
+  margin-bottom: 30px;
 }
 
-input {
-  padding: 12px;
-  width: 80%;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  margin-top: 20px;
+.header h1 {
+  font-size: 34px;
+  margin: 0;
 }
 
-button {
-  padding: 12px 20px;
-  margin-left: 10px;
-  border: none;
-  border-radius: 8px;
-  background: #9146ff;
-  color: white;
-  cursor: pointer;
+.header p {
+  color: #aaa;
+  margin-top: 5px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+/* 🔥 CARDS */
+.card {
+  background: #18181b;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid #2a2a2d;
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: #9146ff;
+}
+
+/* 🟢 LIVE BADGE */
+.live {
+  color: #00ff99;
   font-weight: bold;
 }
 
-button:hover {
-  background: #772ce8;
+/* 🔴 OFFLINE BADGE */
+.offline {
+  color: #888;
 }
 
-.card {
-  margin-top: 30px;
-  padding: 20px;
-  border-radius: 12px;
-  background: #18181b;
+/* 👀 VIEWERS STYLE */
+.viewers {
+  color: #ffcc00;
+}
+
+/* 🧠 RANK NUMBER */
+.rank {
+  font-size: 14px;
+  color: #777;
 }
