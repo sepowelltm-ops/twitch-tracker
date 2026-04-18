@@ -1,10 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [username, setUsername] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const [leaderboard, setLeaderboard] = useState([]);
+
+  const loadLeaderboard = async () => {
+    try {
+      const res = await fetch("/api/leaderboard");
+      const data = await res.json();
+      setLeaderboard(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  
+  useEffect(() => {
+    loadLeaderboard();
+  }, []);
+  
   const checkTwitch = async () => {
     if (!username) return;
 
