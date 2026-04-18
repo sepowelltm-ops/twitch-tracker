@@ -1,5 +1,6 @@
-console.log("PAGE LOADED");
-
+export default function Home() {
+  console.log("🔥 THIS FILE IS RUNNING");
+  
 import { useState, useEffect } from "react";
 
 export default function Home() {
