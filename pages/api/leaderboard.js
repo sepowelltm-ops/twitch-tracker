@@ -49,9 +49,6 @@ const usernames = [
   "georgenotfound",
   "slakun10",
   "elraenn"
-];
-    
-    // 👉 keep adding up to 100 usernames here
   ];
 
   const headers = {
