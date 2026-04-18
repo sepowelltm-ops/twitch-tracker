@@ -61,5 +61,14 @@ export default async function handler(req, res) {
     })
   );
 
-  res.status(200).json(results);
+  res.status(200).json(sorted);
+
+  const sorted = results.sort((a, b) => {
+  // live streams first
+  if (a.isLive && !b.isLive) return -1;
+  if (!a.isLive && b.isLive) return 1;
+
+  // if both live → sort by viewers
+  return b.viewers - a.viewers;
+});
 }
