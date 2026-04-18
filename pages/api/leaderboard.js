@@ -16,7 +16,6 @@ export default async function handler(req, res) {
 
   const userData = await userRes.json();
 
-  // map login -> id
   const users = {};
   userData.data.forEach(u => {
     users[u.login] = {
@@ -43,7 +42,6 @@ export default async function handler(req, res) {
         s => s.user_login === username
       );
 
-      // 4️⃣ Get follower count
       const followRes = await fetch(
         `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${user.id}`,
         { headers }
@@ -61,14 +59,14 @@ export default async function handler(req, res) {
     })
   );
 
-  res.status(200).json(sorted);
-
+  // ✅ SORT FIRST
   const sorted = results.sort((a, b) => {
-  // live streams first
-  if (a.isLive && !b.isLive) return -1;
-  if (!a.isLive && b.isLive) return 1;
+    if (a.isLive && !b.isLive) return -1;
+    if (!a.isLive && b.isLive) return 1;
 
-  // if both live → sort by viewers
-  return b.viewers - a.viewers;
-});
+    return b.viewers - a.viewers;
+  });
+
+  // ✅ THEN RETURN
+  return res.status(200).json(sorted);
 }
