@@ -85,22 +85,35 @@ export default function Home() {
             <p>Viewers: {data.viewers}</p>
           )}
        
-         <h2>🏆 Leaderboard</h2>
+<h2>🏆 Leaderboard</h2>
 
-        {leaderboard.map((user, i) => (
-          <div key={i} className="card">
-            <h3>{i + 1}. {user.name}</h3>
-            <p>Status: {user.isLive ? "🟢 Live" : "🔴 Offline"}</p>
-            <p>Viewers: {user.viewers}</p>
-            <p>Followers: {user.followers}</p>
+{Array.isArray(leaderboard) && leaderboard.length > 0 ? (
+  leaderboard.map((user, i) => (
+    <div key={i} className="card">
+      <h3>{i + 1}. {user.name || user.user_name || "Unknown"}</h3>
 
-            {user.started_at && (
-              <p>
-                Started: {new Date(user.started_at).toLocaleTimeString()}
-              </p>
-            )}
-          </div>
-        ))}
+      <p>
+        Status: {user.isLive || user.type === "live" ? "🟢 Live" : "🔴 Offline"}
+      </p>
+
+      <p>
+        Viewers: {user.viewers ?? user.viewer_count ?? 0}
+      </p>
+
+      <p>
+        Followers: {user.followers ?? "N/A"}
+      </p>
+
+      {user.started_at && (
+        <p>
+          Started: {new Date(user.started_at).toLocaleTimeString()}
+        </p>
+      )}
+    </div>
+  ))
+) : (
+  <p>Loading leaderboard...</p>
+)}
        
   </div>
 );
