@@ -1,72 +1,66 @@
 export default async function handler(req, res) {
-  const usernames = ["kai_cenat", "xqc", "pokimane"];
+  const usernames = [
+    "kai_cenat",
+    "xqc",
+    "pokimane"
+    // 👉 keep adding up to 100 usernames here
+  ];
 
   const headers = {
     "Client-ID": process.env.TWITCH_CLIENT_ID,
     "Authorization": `Bearer ${process.env.TWITCH_TOKEN}`,
   };
 
-  // 1️⃣ Get user IDs
-  const userRes = await fetch(
-    `https://api.twitch.tv/helix/users?${usernames
-      .map(u => `login=${u}`)
-      .join("&")}`,
-    { headers }
-  );
+  try {
+    // 1️⃣ Get user IDs
+    const userRes = await fetch(
+      `https://api.twitch.tv/helix/users?${usernames
+        .map(u => `login=${u}`)
+        .join("&")}`,
+      { headers }
+    );
 
-  const userData = await userRes.json();
+    const userData = await userRes.json();
 
-  const users = {};
-  userData.data.forEach(u => {
-    users[u.login] = {
-      id: u.id,
-      name: u.display_name,
-    };
-  });
-
-  // 2️⃣ Get live stream data
-  const streamRes = await fetch(
-    `https://api.twitch.tv/helix/streams?${usernames
-      .map(u => `user_login=${u}`)
-      .join("&")}`,
-    { headers }
-  );
-
-  const streamData = await streamRes.json();
-
-  // 3️⃣ Build result
-  const results = await Promise.all(
-    usernames.map(async (username) => {
-      const user = users[username];
-      const stream = streamData.data.find(
-        s => s.user_login === username
-      );
-
-      const followRes = await fetch(
-        `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${user.id}`,
-        { headers }
-      );
-
-      const followData = await followRes.json();
-
-      return {
-        name: user.name,
-        isLive: !!stream,
-        viewers: stream?.viewer_count || 0,
-        started_at: stream?.started_at || null,
-        followers: followData.total || 0,
+    const users = {};
+    userData.data.forEach(u => {
+      users[u.login] = {
+        id: u.id,
+        name: u.display_name,
       };
-    })
-  );
+    });
 
-  // ✅ SORT FIRST
-  const sorted = results.sort((a, b) => {
-    if (a.isLive && !b.isLive) return -1;
-    if (!a.isLive && b.isLive) return 1;
+    // 2️⃣ Build results (followers only)
+    const results = await Promise.all(
+      usernames.map(async (username) => {
+        const user = users[username];
+        if (!user) return null;
 
-    return b.viewers - a.viewers;
-  });
+        const followRes = await fetch(
+          `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${user.id}`,
+          { headers }
+        );
 
-  // ✅ THEN RETURN
-  return res.status(200).json(sorted);
+        const followData = await followRes.json();
+
+        return {
+          name: user.name,
+          followers: Number(followData.total || 0),
+        };
+      })
+    );
+
+    // 3️⃣ Remove nulls + SORT (highest → lowest)
+    const sorted = results
+      .filter(Boolean)
+      .sort((a, b) => b.followers - a.followers)
+      .slice(0, 100);
+
+    // 4️⃣ return leaderboard
+    return res.status(200).json(sorted);
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Leaderboard failed" });
+  }
 }
