@@ -1,33 +1,27 @@
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  console.log("🔥 PAGE LOADED");
-
   const [username, setUsername] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [leaderboard, setLeaderboard] = useState([]);
 
-  // 🏆 Load leaderboard
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+
   const loadLeaderboard = async () => {
     try {
       const res = await fetch("/api/leaderboard");
       const data = await res.json();
-
-      console.log("RAW LEADERBOARD:", data);
-
-      setLeaderboard(Array.isArray(data) ? data : []);
+      setLeaderboard(data);
     } catch (err) {
       console.error(err);
     }
   };
 
-  // 🔄 Run once on page load
   useEffect(() => {
     loadLeaderboard();
   }, []);
 
-  // 🔍 Single user check
   const checkTwitch = async () => {
     if (!username) return;
 
@@ -41,10 +35,7 @@ export default function Home() {
       const userRes = await fetch(`/api/user?user=${username}`);
       const userData = await userRes.json();
 
-      setData({
-        ...streamData,
-        ...userData,
-      });
+      setData({ ...streamData, ...userData });
     } catch (err) {
       console.error(err);
     }
@@ -53,69 +44,57 @@ export default function Home() {
   };
 
   return (
-    <div className="container">
-      <h1>🎮 Twitch Tracker</h1>
+    <div className="page">
 
-      {/* INPUT */}
-      <div>
+      <h1 className="title">🎮 Twitch Tracker</h1>
+
+      <div className="searchBox">
         <input
-          type="text"
-          placeholder="Enter Twitch username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter Twitch username"
         />
 
-        <button onClick={checkTwitch}>
-          Check
-        </button>
+        <button onClick={checkTwitch}>Check</button>
       </div>
 
-      {/* SINGLE USER CARD */}
+      <button
+        className="toggleBtn"
+        onClick={() => setShowLeaderboard(!showLeaderboard)}
+      >
+        {showLeaderboard ? "Hide Leaderboard" : "Show Leaderboard 🏆"}
+      </button>
+
       {loading && <p>Loading...</p>}
 
       {data && (
         <div className="card">
           <h2>{username}</h2>
-
-          <p>
-            Status: {data.live ? "🟢 Live" : "🔴 Offline"}
-          </p>
-
+          <p>{data.live ? "🟢 Live" : "🔴 Offline"}</p>
           <p>Followers: {data.followers ?? "N/A"}</p>
-
           {data.live && <p>Viewers: {data.viewers}</p>}
         </div>
       )}
 
-      {/* 🏆 LEADERBOARD (ALWAYS VISIBLE) */}
-      <h2>🏆 Leaderboard</h2>
+      {showLeaderboard && (
+        <div className="leaderboard">
+          <h2>🏆 Leaderboard</h2>
 
-      {leaderboard.length > 0 ? (
-        leaderboard.map((user, i) => (
-          <div key={i} className="card">
-            <h3>
-              {i + 1}. {user.name}
-            </h3>
+          {leaderboard.map((user, i) => (
+            <div key={i} className="card">
+              <h3>#{i + 1} {user.name}</h3>
 
-            <p>
-              Status: {user.isLive ? "🟢 Live" : "🔴 Offline"}
-            </p>
-
-            <p>Viewers: {user.viewers}</p>
-
-            <p>Followers: {user.followers}</p>
-
-            {user.started_at && (
-              <p>
-                Started:{" "}
-                {new Date(user.started_at).toLocaleTimeString()}
+              <p className={user.isLive ? "live" : "offline"}>
+                {user.isLive ? "🟢 Live" : "🔴 Offline"}
               </p>
-            )}
-          </div>
-        ))
-      ) : (
-        <p>Loading leaderboard...</p>
+
+              <p>👀 {user.viewers}</p>
+              <p>⭐ {user.followers.toLocaleString()}</p>
+            </div>
+          ))}
+        </div>
       )}
+
     </div>
   );
 }
