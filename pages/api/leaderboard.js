@@ -15,6 +15,7 @@ export default async function handler(req, res) {
   };
 
   try {
+    // 1️⃣ USERS
     const userRes = await fetch(
       `https://api.twitch.tv/helix/users?${usernames.map(u => `login=${u}`).join("&")}`,
       { headers }
@@ -22,8 +23,14 @@ export default async function handler(req, res) {
     const userData = await userRes.json();
 
     const users = {};
-    userData.data.forEach(u => users[u.login] = { id: u.id, name: u.display_name });
+    userData.data.forEach(u => {
+      users[u.login] = {
+        id: u.id,
+        name: u.display_name,
+      };
+    });
 
+    // 2️⃣ STREAMS (LIVE DATA)
     const streamRes = await fetch(
       `https://api.twitch.tv/helix/streams?${usernames.map(u => `user_login=${u}`).join("&")}`,
       { headers }
@@ -31,12 +38,17 @@ export default async function handler(req, res) {
     const streamData = await streamRes.json();
 
     const streamMap = {};
-    streamData.data.forEach(s => streamMap[s.user_login] = s);
+    streamData.data.forEach(s => {
+      streamMap[s.user_login] = s;
+    });
 
+    // 3️⃣ BUILD RESULTS
     const results = await Promise.all(
       usernames.map(async (u) => {
         const user = users[u];
         if (!user) return null;
+
+        const stream = streamMap[u];
 
         const followRes = await fetch(
           `https://api.twitch.tv/helix/channels/followers?broadcaster_id=${user.id}`,
@@ -46,11 +58,23 @@ export default async function handler(req, res) {
 
         return {
           name: user.name,
+
+          // ⭐ FOLLOWERS (sorting value)
           followers: Number(followData.total || 0),
+
+          // 🔴 LIVE STATUS
+          isLive: !!stream,
+
+          // 👀 VIEWERS (0 if offline)
+          viewers: stream?.viewer_count || 0,
+
+          // ⏱ stream start time (optional but useful)
+          started_at: stream?.started_at || null,
         };
       })
     );
 
+    // 4️⃣ SORT TOP 100 BY FOLLOWERS
     const sorted = results
       .filter(Boolean)
       .sort((a, b) => b.followers - a.followers)
@@ -59,6 +83,7 @@ export default async function handler(req, res) {
     return res.status(200).json(sorted);
 
   } catch (e) {
+    console.error(e);
     return res.status(500).json({ error: "Leaderboard failed" });
   }
 }
