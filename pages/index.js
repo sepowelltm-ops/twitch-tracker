@@ -10,15 +10,18 @@ export default function Home() {
 
   const [leaderboard, setLeaderboard] = useState([]);
 
-  const loadLeaderboard = async () => {
-    try {
-      const res = await fetch("/api/leaderboard");
-      const data = await res.json();
-      setLeaderboard(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+const loadLeaderboard = async () => {
+  try {
+    const res = await fetch("/api/leaderboard");
+    const data = await res.json();
+
+    console.log("RAW API:", data); // keep this for sanity
+
+    setLeaderboard(Array.isArray(data) ? data : data.data || []);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   
   useEffect(() => {
