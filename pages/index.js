@@ -84,8 +84,23 @@ export default function Home() {
           {data.live && (
             <p>Viewers: {data.viewers}</p>
           )}
-        </div>
-      )}
-    </div>
-  );
-}
+       
+         <h2>🏆 Leaderboard</h2>
+
+        {leaderboard.map((user, i) => (
+          <div key={i} className="card">
+            <h3>{i + 1}. {user.name}</h3>
+            <p>Status: {user.isLive ? "🟢 Live" : "🔴 Offline"}</p>
+            <p>Viewers: {user.viewers}</p>
+            <p>Followers: {user.followers}</p>
+
+            {user.started_at && (
+              <p>
+                Started: {new Date(user.started_at).toLocaleTimeString()}
+              </p>
+            )}
+          </div>
+        ))}
+       
+  </div>
+);
