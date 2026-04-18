@@ -21,6 +21,8 @@ export default function Home() {
   useEffect(() => {
     loadLeaderboard();
   }, []);
+
+  console.log("leaderboard:", leaderboard);
   
   const checkTwitch = async () => {
     if (!username) return;
